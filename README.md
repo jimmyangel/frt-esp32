@@ -1,8 +1,8 @@
 # frt - Flössie's ready (FreeRTOS) threading
 
-frt is an object-oriented wrapper around FreeRTOS tasks, mutexes, semaphores, and queues. It provides the basic tools for a clean multithreading approach based on the [Arduino_FreeRTOS_Library](https://github.com/feilipu/Arduino_FreeRTOS_Library) with focus on static allocation, so you know your SRAM demands at compile time.
+frt is an object-oriented wrapper around FreeRTOS tasks, mutexes, semaphores, and queues. It provides the basic tools for a clean multithreading approach based on the [ESP32 FreeRTOS implementation](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/freertos-smp.html#api-changes).
 
-This will compile just fine with the stock [Arduino_FreeRTOS_Library](https://github.com/feilipu/Arduino_FreeRTOS_Library), but if you want the advantages of static allocation you are welcome to try my [`minimal-static`](https://github.com/Floessie/Arduino_FreeRTOS_Library/tree/minimal-static) branch with frt.
+I modified the [original Arduino version](https://github.com/Floessie/frt) to compile/run under the FreeRTOS version included in the ESP32 Arduino core. Initial testing looks ok. Still need to test the examples, although some of them are AVR/Arduino Mega specific.
 
 ## Implementation
 
