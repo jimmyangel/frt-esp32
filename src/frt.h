@@ -23,13 +23,9 @@
 
 #pragma once
 
-#include <Arduino.h>
-#include <Arduino_FreeRTOS.h>
-#include <queue.h>
-#include <semphr.h>
-
 namespace frt
 {
+	portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 
 	namespace detail {
 
@@ -111,9 +107,9 @@ namespace frt
 
 		bool isRunning() const
 		{
-			taskENTER_CRITICAL();
+			taskENTER_CRITICAL(&mux);
 			const bool res = running;
-			taskEXIT_CRITICAL();
+			taskEXIT_CRITICAL(&mux);
 
 			return res;
 		}
@@ -195,12 +191,12 @@ namespace frt
 
 		void beginCriticalSection() __attribute__((always_inline))
 		{
-			taskENTER_CRITICAL();
+			taskENTER_CRITICAL(&mux);
 		}
 
 		void endCriticalSection() __attribute__((always_inline))
 		{
-			taskEXIT_CRITICAL();
+			taskEXIT_CRITICAL(&mux);
 		}
 
 	private:
@@ -210,18 +206,18 @@ namespace frt
 				return false;
 			}
 
-			taskENTER_CRITICAL();
+			taskENTER_CRITICAL(&mux);
 			do_stop = true;
 			while (running) {
-				taskEXIT_CRITICAL();
+				taskEXIT_CRITICAL(&mux);
 				if (!from_idle_task) {
 					vTaskDelay(1);
 				} else {
 					taskYIELD();
 				}
-				taskENTER_CRITICAL();
+				taskENTER_CRITICAL(&mux);
 			}
-			taskEXIT_CRITICAL();
+			taskEXIT_CRITICAL(&mux);
 
 			return true;
 		}
@@ -232,21 +228,21 @@ namespace frt
 
 			bool do_stop;
 
-			taskENTER_CRITICAL();
+			taskENTER_CRITICAL(&mux);
 			self->running = true;
 			do_stop = self->do_stop;
-			taskEXIT_CRITICAL();
+			taskEXIT_CRITICAL(&mux);
 
 			while (!do_stop && static_cast<T*>(self)->run()) {
-				taskENTER_CRITICAL();
+				taskENTER_CRITICAL(&mux);
 				do_stop = self->do_stop;
-				taskEXIT_CRITICAL();
+				taskEXIT_CRITICAL(&mux);
 			}
 
-			taskENTER_CRITICAL();
+			taskENTER_CRITICAL(&mux);
 			self->do_stop = false;
 			self->running = false;
-			taskEXIT_CRITICAL();
+			taskEXIT_CRITICAL(&mux);
 
 			const TaskHandle_t handle_copy = self->handle;
 			self->handle = nullptr;
