@@ -1,5 +1,7 @@
 # frt - Flössie's ready (FreeRTOS) threading
 
+## NOTE: NOT FULLY TESTED YET ##
+
 frt is an object-oriented wrapper around FreeRTOS tasks, mutexes, semaphores, and queues. It provides the basic tools for a clean multithreading approach based on the [ESP32 FreeRTOS implementation](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/freertos-smp.html#api-changes).
 
 I modified the [original Arduino version](https://github.com/Floessie/frt) to compile/run under the FreeRTOS version included in the ESP32 Arduino core. Initial testing looks ok. Still need to test the examples, although some of them are AVR/Arduino Mega specific.
