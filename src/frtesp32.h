@@ -21,11 +21,15 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#ifndef FRTESP32_H
+#define FRTESP32_H
+#include "freertos/FreeRTOS.h"
+
 #pragma once
 
-namespace frt
+namespace frtesp32
 {
-	portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
+  extern portMUX_TYPE mux;
 
 	namespace detail {
 
@@ -511,3 +515,5 @@ namespace frt
 	};
 
 }
+
+#endif
