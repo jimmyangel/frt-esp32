@@ -8,7 +8,7 @@ I modified the [original Arduino version](https://github.com/Floessie/frt) to co
 
 ## Implementation
 
-Just take a look at [`frt.h`](https://github.com/Floessie/frt/blob/master/src/frt.h). It contains the whole wrapper in about 500 lines of C++ code.
+Just take a look at [`frtesp32.h`]https://github.com/jimmyangel/frtesp32/blob/master/src/frtesp32.h). It contains the whole wrapper in about 500 lines of C++ code.
 
 ## Examples
 
@@ -19,7 +19,13 @@ Just take a look at [`frt.h`](https://github.com/Floessie/frt/blob/master/src/fr
 
 ## API
 
-The whole API resides in the `frt` namespace. That doesn't mean your classes have to be in namespace `frt`, but that all classes of `frt` have to be prefixed with `frt::` when  using them. See the code snippets below and the examples above.
+The whole API resides in the `frt` namespace. That doesn't mean your classes have to be in namespace `frt`, but that all classes of `frt` have to be prefixed with `frtesp32::` when  using them. See the code snippets below and the examples above.
+
+Define global spinlock to account for the ESP32 FreeRTOS API modification:
+
+```
+portMUX_TYPE frtesp32::mux = portMUX_INITIALIZER_UNLOCKED;
+```
 
 ### Task
 
@@ -27,7 +33,7 @@ A task (or thread in other OSes) is the thing that does the work. It's like your
 
 ```c++
 class MyFirstTask :
-    public frt::Task<MyFirstTask>
+    public frtesp32::Task<MyFirstTask>
 {
 public:
     bool run()
@@ -39,7 +45,7 @@ public:
 };
 ```
 
-The repetition of `MyFirstTask` in `frt::Task<MyFirstTask>` is due to [static dispatch per CRTP](https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern#Static_polymorphism), a commonly used pattern that saves code and precious RAM. Think of `run()` as your previously used `loop()` function with an additional return value, with which you can signal if you want to be called again or not. If you returned `false` in the example above, `run()` would only be called once.
+The repetition of `MyFirstTask` in `frtesp32::Task<MyFirstTask>` is due to [static dispatch per CRTP](https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern#Static_polymorphism), a commonly used pattern that saves code and precious RAM. Think of `run()` as your previously used `loop()` function with an additional return value, with which you can signal if you want to be called again or not. If you returned `false` in the example above, `run()` would only be called once.
 
 Things you can only do inside your task class:
 * `yield()`: If there's another task with the same or higher priority, switch over to it voluntarily.
@@ -79,9 +85,9 @@ Mutexes protect code sections from being accessed concurrently by multiple tasks
 
 Normally you would only protect variable accesses and keep the locked times short. But they can as well be used to guard an action that should not be interrupted or a resource that has to finish something before something new is started. Keep an eye on the locking sequence when multiple mutexes are involved: It's easy to shoot oneself in the foot and provoke a [deadlock](https://en.wikipedia.org/wiki/Deadlock). To avoid that either go for broader locking with fewer mutexes, or avoid nested locking by restructuring the code.
 
-Mutexes in FreeRTOS can't be used from ISRs. See `frt::Task::beginCriticalSection()` for that.
+Mutexes in FreeRTOS can't be used from ISRs. See `frtesp32::Task::beginCriticalSection()` for that.
 
-A `frt::Mutex` has a dead simple interface:
+A `frtesp32::Mutex` has a dead simple interface:
 * `lock()`: Locks the mutex.
 * `unlock()`: Unlocks the mutex.
 
@@ -90,15 +96,15 @@ A `frt::Mutex` has a dead simple interface:
 Semaphores synchronize actions like, "Proceed only when I told you so!" Thus, semaphores are "locked" in pristine state, whereas mutexes are unlocked. Mutexes must be "given back" via `unlock()`, whereas semaphores are "consumed". Usually there's one task `wait()`ing on a semaphore and another one `post()`ing on it.
 
 There are two kinds of semaphores:
-1. Binary semaphores, which only remember if they were posted but not how often. This is often sufficient and the default for a `frt::Semaphore`.
-2. Counting semaphores, that remember how often they were posted so that the waiting task can proceed exactly that many times without blocking. Such a semaphore is created by passing `frt::Semaphore::Type::COUNTING` to the constructor:
+1. Binary semaphores, which only remember if they were posted but not how often. This is often sufficient and the default for a `frtesp32::Semaphore`.
+2. Counting semaphores, that remember how often they were posted so that the waiting task can proceed exactly that many times without blocking. Such a semaphore is created by passing `frtesp32::Semaphore::Type::COUNTING` to the constructor:
 
 ```c++
-frt::Semaphore my_binary_semaphore;
-frt::Semaphore my_counting_semaphore(frt::Semaphore::Type::COUNTING);
+frtesp32::Semaphore my_binary_semaphore;
+frtesp32::Semaphore my_counting_semaphore(frt::Semaphore::Type::COUNTING);
 ```
 
-If you want to share data via a buffer (and don't want to use `frt::Queue`), you need a mutex to protect the buffer and a semaphore to notify the consumer. When sharing between an ISR and a task, you can't use a mutex, but must employ a *critical section*.
+If you want to share data via a buffer (and don't want to use `frtesp32::Queue`), you need a mutex to protect the buffer and a semaphore to notify the consumer. When sharing between an ISR and a task, you can't use a mutex, but must employ a *critical section*.
 
 These are the functions of a semaphore:
 * `wait()`: Wait indefinitely for someone posting the semaphore.
