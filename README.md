@@ -8,7 +8,7 @@ I modified the [original Arduino version](https://github.com/Floessie/frt) to co
 
 ## Implementation
 
-Just take a look at [`frtesp32.h`]https://github.com/jimmyangel/frtesp32/blob/master/src/frtesp32.h). It contains the whole wrapper in about 500 lines of C++ code.
+Just take a look at [`frtesp32.h`](https://github.com/jimmyangel/frtesp32/blob/master/src/frtesp32.h). It contains the whole wrapper in about 500 lines of C++ code.
 
 ## Examples
 
