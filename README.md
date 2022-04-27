@@ -21,7 +21,7 @@ Just take a look at [`frtesp32.h`](https://github.com/jimmyangel/frtesp32/blob/m
 
 The whole API resides in the `frt` namespace. That doesn't mean your classes have to be in namespace `frt`, but that all classes of `frt` have to be prefixed with `frtesp32::` when  using them. See the code snippets below and the examples above.
 
-Define global spinlock to account for the ESP32 FreeRTOS API modification:
+Define global spinlock to account for the ESP32 [FreeRTOS API changes](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/freertos-smp.html#api-changes):
 
 ```
 portMUX_TYPE frtesp32::mux = portMUX_INITIALIZER_UNLOCKED;
